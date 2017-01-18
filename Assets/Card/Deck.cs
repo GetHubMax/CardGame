@@ -8,9 +8,11 @@ namespace Application
 	{
 		Dictionary<GameObject,int> deck = new Dictionary<GameObject,int>();
 		string name;
+		private  int id;
 
-		public Deck (string name){
+		public Deck (string name, int id){
 			this.name = name;
+			this.id = id;
 		}
 
 		public void Add(GameObject card){
@@ -41,6 +43,18 @@ namespace Application
 		
 		}
 
+		public string Name(){
+			return name;
+		}
+
+		public void SetName(string name){
+			this.name = name;
+			
+		}
+
+		public int Id(){
+			return id;
+		}
 
 
 	}

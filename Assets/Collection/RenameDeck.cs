@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Card : MonoBehaviour {
-	string trueName;
-	string type;
+public class RenameDeck : MonoBehaviour {
+
 	// Use this for initialization
 	void Start () {
 	

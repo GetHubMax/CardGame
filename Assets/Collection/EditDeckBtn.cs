@@ -22,5 +22,9 @@ public class EditDeckBtn : MonoBehaviour {
 		this.id = id;
 	}
 
+	public int Id(){
+		return id;
+	}
+
 
 }
