@@ -6,7 +6,7 @@ namespace Application
 {
 	public class Deck
 	{
-		Dictionary<GameObject,int> deck = new Dictionary<GameObject,int>();
+		public Dictionary<GameObject,int> deck = new Dictionary<GameObject,int>();
 		string name;
 		private  int id;
 
@@ -23,6 +23,16 @@ namespace Application
 			}
 				
 		}
+
+		public void Add(GameObject card, int more=1){
+			if (deck.ContainsKey (card)) {
+				deck [card] = deck [card] + more;
+			} else {
+				deck.Add (card, more);
+			}
+
+		}
+
 
 		public List<GameObject> GetCards(){
 			return new List<GameObject>(deck.Keys);
@@ -56,7 +66,9 @@ namespace Application
 			return id;
 		}
 
-
+		public int Count(){
+			return deck.Count;
+		}
 	}
 }
 
