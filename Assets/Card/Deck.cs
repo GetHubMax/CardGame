@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Application
+namespace MyApplication
 {
+	[Serializable]
 	public class Deck
 	{
-		public Dictionary<GameObject,int> deck = new Dictionary<GameObject,int>();
-		string name;
+		public Dictionary<CardBase,int> deck = new Dictionary<CardBase,int>();
+		public string name;
+		[SerializeField]
 		private  int id;
 
 		public Deck (string name, int id){
@@ -15,7 +17,7 @@ namespace Application
 			this.id = id;
 		}
 
-		public void Add(GameObject card){
+		public void Add(CardBase card){
 			if (deck.ContainsKey (card)) {
 				deck [card] = deck [card] + 1;
 			} else {
@@ -24,7 +26,7 @@ namespace Application
 				
 		}
 
-		public void Add(GameObject card, int more=1){
+		public void Add(CardBase card, int more=1){
 			if (deck.ContainsKey (card)) {
 				deck [card] = deck [card] + more;
 			} else {
@@ -34,15 +36,15 @@ namespace Application
 		}
 
 
-		public List<GameObject> GetCards(){
-			return new List<GameObject>(deck.Keys);
+		public List<CardBase> GetCards(){
+			return new List<CardBase>(deck.Keys);
 
 		}
 
 
 
 
-		public int CardAmout(GameObject card){
+		public int CardAmout(CardBase card){
 			if (deck.ContainsKey (card)) {
 				return deck [card];
 			
@@ -69,6 +71,13 @@ namespace Application
 		public int Count(){
 			return deck.Count;
 		}
+	
+	
+	
 	}
+
+
+		
+
 }
 

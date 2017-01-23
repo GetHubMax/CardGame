@@ -1,17 +1,18 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-[ExecuteInEditMode]
-public class Card : MonoBehaviour {
-	public string cardName;
-	public string cardType;
-	public string cost;
-	public string rules;
+using System;
+// Serializable
 
+[ExecuteInEditMode]
+public class Card: MonoBehaviour {
+	public CardBase cbase = new CardBase();
+
+	//[Serializable]
 	// Use this for initialization
 	void Start () {
 			
-		GetComponentInChildren<Text> ().text = cardName+" "+rules;
+		gameObject.GetComponentInChildren<Text> ().text = cbase.cardName+" "+cbase.rules;
 	}
 
 	// Update is called once per frame
@@ -19,24 +20,42 @@ public class Card : MonoBehaviour {
 	
 	}
 	public void CardName(string cardName){
-		this.cardName = cardName;
+		cbase.cardName = cardName;
 	}
 
 	public string CardName(){
-		return cardName;
+		return cbase.cardName;
 	}
 
 	public void CardType(string cardType){
-		this.cardType = cardType;
+		cbase.cardType = cardType;
 	}
 
 	public void Cost(string cost){
-		this.cost = cost;
+		cbase.cost = cost;
 	}
 
 	public void Rules(string rules){
-		this.rules = rules;
+		cbase.rules = rules;
 	}
 
+	public CardBase getCardBase(){
+		return cbase;
+	}
+
+
+
+}
+[Serializable]
+public class CardBase{
+	public string cardName;
+
+	public string cardType;
+
+	public string cost;
+
+	public string rules;
+
+	public CardBase(){}
 
 }

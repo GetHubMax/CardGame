@@ -2,7 +2,10 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-using Application;
+using MyApplication;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+using System.Text;
 
 public class CollectionMaster : MonoBehaviour {
 
@@ -10,16 +13,21 @@ public class CollectionMaster : MonoBehaviour {
 	public GameObject selectDeckPage;
 	public GameObject editDeckPage;
 	public GameObject cardInDeck;
+	public GameObject testCard;
 	public int deckLimit=4;
+	public int rowLimit = 4;
 
-	private Dictionary<int, Deck> decks = new Dictionary<int, Deck>();
-	private Dictionary<string, GameObject> cardButtons = new Dictionary<string, GameObject> ();
+	private Dictionary<int, Deck> decks = new Dictionary<int, Deck>();//The decks
+	private Dictionary<string, GameObject> cardButtons = new Dictionary<string, GameObject> ();//
 	private List<GameObject> cards = new List<GameObject>();
 
 	private int deckId = 0;
 	private Deck currentDeck;
 	private List<GameObject> deckBtns = new List<GameObject>();
 	private int mode = SELECTMODE;
+
+	private string deckPath= "";
+
 
 	const int EDITMODE = 0;
 	const int SELECTMODE = 1;
@@ -28,6 +36,7 @@ public class CollectionMaster : MonoBehaviour {
 	void Start () {
 		editDeckPage.SetActive (false);
 		LoadCards ();
+		LoadDecks ();
 	}
 	
 	// Update is called once per frame
@@ -74,6 +83,18 @@ public class CollectionMaster : MonoBehaviour {
 		
 
 	void LoadDecks(){
+		Debug.Log ("Load deck...");
+		DirectoryInfo levelDirectoryPath = new DirectoryInfo (Application.persistentDataPath+deckPath);
+		FileInfo[] paths = levelDirectoryPath.GetFiles("",SearchOption.AllDirectories);
+
+		foreach(FileInfo ob in paths){
+			Debug.Log ("ob.name");
+			Deck dk = Load (ob.Name);
+			decks.Add (dk.Id(),dk);
+
+		}
+
+
 		foreach (KeyValuePair<int, Deck> pair in decks) {
 			GameObject go =Instantiate (deckBtn);
 			go.transform.SetParent (selectDeckPage.transform,false);
@@ -83,7 +104,7 @@ public class CollectionMaster : MonoBehaviour {
 			deckBtn = go;
 		}
 
-
+		Debug.Log ("...end");
 
 
 
@@ -92,12 +113,16 @@ public class CollectionMaster : MonoBehaviour {
 	void EditDeck(int index){
 		selectDeckPage.SetActive (false);
 		editDeckPage.SetActive (true);
-		GameObject.Find ("DeckName").GetComponent<InputField> ().text = decks [index].Name ();
 		currentDeck = decks [index];
+		GameObject.Find ("DeckName").GetComponent<InputField> ().text = currentDeck.Name ();
+
 		mode = EDITMODE;
-		cardButtons = new Dictionary<string, GameObject> ();
-		foreach(KeyValuePair<GameObject,int > pair in currentDeck.deck){
-			AddCard (pair.Key,pair.Value);
+
+		foreach(KeyValuePair<CardBase,int > pair in currentDeck.deck){
+			//AddCard (pair.Key,pair.Value);
+			GameObject button = Instantiate(cardInDeck);
+			button.GetComponent<CardInDeck> ().Set (pair.Key.cardName , pair.Value);
+			button.transform.SetParent (editDeckPage.transform, false);
 
 		}
 
@@ -133,6 +158,7 @@ public class CollectionMaster : MonoBehaviour {
 		editDeckPage.SetActive (false);
 		selectDeckPage.SetActive (true);
 		int cid = currentDeck.Id (); 
+		Save ();
 		foreach (GameObject go in deckBtns) {
 			int id = go.GetComponent<EditDeckBtn> ().Id ();
 
@@ -141,12 +167,19 @@ public class CollectionMaster : MonoBehaviour {
 			}
 			
 		}
+
+		foreach (KeyValuePair<string,GameObject> button in cardButtons) {
+			Destroy (button.Value);
+		}
+
+		cardButtons.Clear();
+
 		mode = SELECTMODE;
 
 
 	}
 	public void AddCard(GameObject gCard){
-		currentDeck.Add (gCard,1);
+		currentDeck.Add (gCard.GetComponent<Card>().cbase,1);
 		Card card = gCard.GetComponent<Card> ();
 
 
@@ -155,10 +188,10 @@ public class CollectionMaster : MonoBehaviour {
 			button.transform.SetParent (editDeckPage.transform , false);
 			Vector3 down = new Vector3(0,currentDeck.Count ()*-25,0);
 			button.transform.Translate (down);
-			button.GetComponent<CardInDeck> ().SetCard (gCard, currentDeck.deck[gCard]);
+			button.GetComponent<CardInDeck> ().SetCard (gCard, currentDeck.deck[gCard.GetComponent<Card>().cbase]);
 			cardButtons.Add (card.CardName (), button);
 		}else{
-			cardButtons [card.CardName ()].GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard]);	
+			cardButtons [card.CardName ()].GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard.GetComponent<Card>().cbase]);	
 
 		}
 
@@ -166,7 +199,7 @@ public class CollectionMaster : MonoBehaviour {
 	}
 
 	public void AddCard(GameObject gCard, int amount){
-		currentDeck.Add (gCard,amount);
+		currentDeck.Add (gCard.GetComponent<Card>().cbase,amount);
 		Card card = gCard.GetComponent<Card> ();
 
 
@@ -174,12 +207,12 @@ public class CollectionMaster : MonoBehaviour {
 			GameObject button = Instantiate (cardInDeck);	
 			Vector3 down = new Vector3(0,currentDeck.Count ()*-25,0);
 			button.transform.Translate (down);
-			button.GetComponent<CardInDeck> ().SetCard (gCard, currentDeck.deck[gCard]);
+			button.GetComponent<CardInDeck> ().SetCard (gCard, currentDeck.deck[card.cbase]);
 			button.transform.SetParent (editDeckPage.transform , false);
 			cardButtons.Add (card.CardName (), button);
 
 		}
-			cardButtons [card.CardName ()].GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard]);	
+		cardButtons [card.CardName ()].GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard.GetComponent<Card>().cbase]);	
 
 
 
@@ -188,9 +221,9 @@ public class CollectionMaster : MonoBehaviour {
 
 	public void SubCard(GameObject gCard){
 		GameObject tmp = cardButtons [gCard.GetComponent<Card> ().CardName ()];
-		currentDeck.deck [gCard] = currentDeck.deck [gCard] - 1;
-		tmp.GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard]);	
-		if (currentDeck.deck [gCard] <= 0) {
+		currentDeck.deck [gCard.GetComponent<Card>().cbase] = currentDeck.deck [gCard.GetComponent<Card>().cbase] - 1;
+		tmp.GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard.GetComponent<Card>().cbase]);	
+		if (currentDeck.deck [gCard.GetComponent<Card>().cbase] <= 0) {
 			
 			cardButtons.Remove (gCard.GetComponent<Card>().CardName());
 			Destroy (tmp);
@@ -204,7 +237,7 @@ public class CollectionMaster : MonoBehaviour {
 	private int pageNumber=1; 
 
 	public void Next(){
-		 int limit = cards.Count / (deckLimit*2)	;
+		int limit = cards.Count / (rowLimit*2)	;
 		Debug.Log (pageNumber +"/"+limit);
 		if (pageNumber < limit) {
 			Camera.main.transform.Translate (new Vector3 (0, more, 0));
@@ -221,4 +254,111 @@ public class CollectionMaster : MonoBehaviour {
 			pageNumber--;
 		}
 	}
+
+	public void Save(){
+		StringBuilder str = new StringBuilder ();
+		str.Append (Application.persistentDataPath);
+		str.Append ("/deck");
+		str.Append (currentDeck.Id());
+		str.Append (".dk");
+
+		BinaryFormatter bf = new BinaryFormatter ();
+	//	if (!File.Exists (bf.ToString ())) {
+	//		File.Create (bf.ToString ());
+		
+	//	}
+
+		//FileStream file = File.Open (str.ToString(), FileMode.Open);//Will need to allow muitable decks
+		FileStream file = File.Create (str.ToString());
+		bf.Serialize(file, currentDeck);
+		file.Close ();
+	}
+
+	public Deck Load(string path){
+			
+		Deck rt = null;
+		if (File.Exists (path) ){
+
+			BinaryFormatter bf = new BinaryFormatter ();
+			FileStream file = File.Open (path,FileMode.Open);
+			rt =(Deck)bf.Deserialize (file) ;
+			file.Close ();
+
+		}
+		return rt;
+	}
+
+
+	public void TestSaveCard(){
+
+		StringBuilder str = new StringBuilder ();
+		str.Append (Application.persistentDataPath);
+		str.Append ("/deckcard.cd");
+
+
+		BinaryFormatter bf = new BinaryFormatter ();
+	
+		FileStream file = File.Create (str.ToString());
+		CardBase cardBase = testCard.GetComponent<Card> ().cbase;
+		bf.Serialize(file,cardBase);
+		file.Close ();
+
+		//Debug.Log(" Saved "+testCard.GetComponent<Card>().CardName());
+		Debug.Log("Saved "+testCard.name);
+	}
+
+	public void TestLoadCard(){
+		StringBuilder str = new StringBuilder ();
+		str.Append (Application.persistentDataPath);
+		str.Append ("/deckcard.cd");
+
+		if (File.Exists (str.ToString()) ){
+
+			BinaryFormatter bf = new BinaryFormatter ();
+			FileStream file = File.Open (str.ToString(),FileMode.Open);
+			CardBase rt =(CardBase)bf.Deserialize (file) ;
+			file.Close ();
+			Debug.Log("Loaded "+rt.cardName);
+
+		}
+			
+	}
+
+
+	public void TestSaveDeck(){
+		StringBuilder str = new StringBuilder ();
+		str.Append (Application.persistentDataPath);
+		str.Append ("/deck00.dk");
+
+
+		BinaryFormatter bf = new BinaryFormatter ();
+
+		FileStream file = File.Create (str.ToString());
+		bf.Serialize(file,currentDeck);
+		file.Close ();
+
+		//Debug.Log(" Saved "+testCard.GetComponent<Card>().CardName());
+		Debug.Log("Saved "+currentDeck.name);
+	}
+
+	public void TestLoadDeck(){
+		StringBuilder str = new StringBuilder ();
+		str.Append (Application.persistentDataPath);
+		str.Append ("/deck00.dk");
+
+		if (File.Exists (str.ToString()) ){
+
+			BinaryFormatter bf = new BinaryFormatter ();
+			FileStream file = File.Open (str.ToString(),FileMode.Open);
+			Deck rt =(Deck)bf.Deserialize (file) ;
+			file.Close ();
+			Debug.Log("Loaded "+rt.name);
+
+		}
+	}
+
+
+
+
+
 }
