@@ -27,7 +27,7 @@ public class CollectionMaster : MonoBehaviour {
 	private int mode = SELECTMODE;
 
 	private string deckPath= "";
-
+	//Needs: change decks to use String as key, key for file name, and buttons store key.
 
 	const int EDITMODE = 0;
 	const int SELECTMODE = 1;
@@ -83,13 +83,14 @@ public class CollectionMaster : MonoBehaviour {
 		
 
 	void LoadDecks(){
-		Debug.Log ("Load deck...");
-		DirectoryInfo levelDirectoryPath = new DirectoryInfo (Application.persistentDataPath+deckPath);
-		FileInfo[] paths = levelDirectoryPath.GetFiles("",SearchOption.AllDirectories);
+		Debug.Log ("Load deck at "+Application.persistentDataPath+" ...");
+		DirectoryInfo levelDirectoryPath = new DirectoryInfo (Application.persistentDataPath);
+		FileInfo[] paths = levelDirectoryPath.GetFiles("*.dk",SearchOption.AllDirectories);
 
 		foreach(FileInfo ob in paths){
-			Debug.Log ("ob.name");
-			Deck dk = Load (ob.Name);
+			
+			Debug.Log (ob.Name);
+			Deck dk = Load (ob.FullName);
 			decks.Add (dk.Id(),dk);
 
 		}

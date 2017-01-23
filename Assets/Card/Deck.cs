@@ -8,7 +8,8 @@ namespace MyApplication
 	public class Deck
 	{
 		public Dictionary<CardBase,int> deck = new Dictionary<CardBase,int>();
-		public string name;
+		[SerializeField]
+		private string name;
 		[SerializeField]
 		private  int id;
 
