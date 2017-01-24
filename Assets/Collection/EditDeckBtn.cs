@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class EditDeckBtn : MonoBehaviour {
-	int id=0;
+	private string deckName;
 	// Use this for initialization
 	void Start () {
 	
@@ -14,16 +15,17 @@ public class EditDeckBtn : MonoBehaviour {
 	}
 
 	public void EditDeck(){
-		GameObject.Find ("CollectionMaster").SendMessage ("EditDeck", id);
-
+		GameObject.Find ("CollectionMaster").SendMessage ("EditDeck", deckName);
+		GameObject.Find ("CollectionMaster").SendMessage ("SetDeckBnt", gameObject);
 	}
 
-	public void SetId(int id){
-		this.id = id;
+	public void SetName(string deckName){
+		this.deckName = deckName;
+		gameObject.GetComponentInChildren<Text> ().text = deckName;
 	}
 
-	public int Id(){
-		return id;
+	public string Name(){
+		return deckName;
 	}
 
 

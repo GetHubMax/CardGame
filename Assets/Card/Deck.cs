@@ -11,11 +11,19 @@ namespace MyApplication
 		[SerializeField]
 		private string name;
 		[SerializeField]
+		private string path;
+		[SerializeField]
 		private  int id;
 
 		public Deck (string name, int id){
 			this.name = name;
 			this.id = id;
+		}
+
+		public Deck (string name, string path,int id){
+			this.name = name;
+			this.id = id;
+			this.path = path;
 		}
 
 		public void Add(CardBase card){
@@ -74,7 +82,16 @@ namespace MyApplication
 		}
 	
 	
-	
+		public void Path(string name, string path){
+			this.path = path;
+			this.name = name;
+		}
+
+		public string Path(){
+			return path;
+		}
+
+
 	}
 
 
