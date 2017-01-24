@@ -6,7 +6,7 @@ using System;
 
 [ExecuteInEditMode]
 public class Card: MonoBehaviour {
-	public CardBase cbase = new CardBase();
+	public CardBase cbase;
 
 	//[Serializable]
 	// Use this for initialization
@@ -19,7 +19,12 @@ public class Card: MonoBehaviour {
 	void Update () {
 	
 	}
+	public void CardBase(CardBase cbase){
+		this.cbase = cbase;
+	}
+
 	public void CardName(string cardName){
+		
 		cbase.cardName = cardName;
 	}
 
@@ -39,7 +44,7 @@ public class Card: MonoBehaviour {
 		cbase.rules = rules;
 	}
 
-	public CardBase getCardBase(){
+	public CardBase CardBase(){
 		return cbase;
 	}
 
@@ -56,6 +61,13 @@ public class CardBase{
 
 	public string rules;
 
-	public CardBase(){}
+
+
+	public CardBase(){
+		
+	}
+
+
+
 
 }

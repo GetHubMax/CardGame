@@ -14,6 +14,9 @@ namespace MyApplication
 		private string path;
 		[SerializeField]
 		private  int id;
+		[SerializeField]
+		private int total=0;
+
 
 		public Deck (string name, int id){
 			this.name = name;
@@ -32,7 +35,7 @@ namespace MyApplication
 			} else {
 				deck.Add (card, 1);
 			}
-				
+			total++;
 		}
 
 		public void Add(CardBase card, int more=1){
@@ -41,6 +44,17 @@ namespace MyApplication
 			} else {
 				deck.Add (card, more);
 			}
+			total++;
+		}
+
+		public void SubCard(CardBase card){
+			if (deck.ContainsKey (card)) {
+				deck [card] = deck [card] -1;
+			}
+			if (deck [card] <= 0) {
+				deck.Remove (card);
+			}
+			total--;
 
 		}
 
@@ -50,6 +64,10 @@ namespace MyApplication
 
 		}
 
+
+		public int Total(){
+			return total;
+		}
 
 
 
@@ -61,7 +79,7 @@ namespace MyApplication
 			
 				return 0;
 			}				
-		
+			
 		}
 
 		public string Name(){
@@ -90,6 +108,9 @@ namespace MyApplication
 		public string Path(){
 			return path;
 		}
+
+
+
 
 
 	}

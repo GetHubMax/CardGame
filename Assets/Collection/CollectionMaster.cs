@@ -14,12 +14,13 @@ public class CollectionMaster : MonoBehaviour {
 	public GameObject editDeckPage;
 	public GameObject cardInDeck;
 	public GameObject testCard;
+	public GameObject cardCount;
 	public int deckLimit=4;
-	private int deckcount = 0;
 	public int rowLimit = 4;
+	public int cardLimit=60;
 
 	private Dictionary<string, Deck> decks = new Dictionary<string, Deck>();//The decks
-	private Dictionary<string, GameObject> cardButtons = new Dictionary<string, GameObject> ();//
+	private Dictionary<CardBase, GameObject> cardButtons = new Dictionary<CardBase, GameObject> ();//
 	private List<GameObject> cards = new List<GameObject>();
 
 	private int deckId = 0;
@@ -52,7 +53,7 @@ public class CollectionMaster : MonoBehaviour {
 			RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint (Input.mousePosition),Vector2.zero,Mathf.Infinity);
 			if (hit.collider != null && mode==EDITMODE) {
 				Debug.Log (hit.collider.gameObject.name);
-				AddCard (hit.collider.gameObject);
+				AddCard (hit.collider.gameObject.GetComponent<Card>().CardBase());
 			}
 							
 
@@ -121,16 +122,26 @@ public class CollectionMaster : MonoBehaviour {
 		GameObject.Find ("DeckName").GetComponent<InputField> ().text = currentDeck.Name ();
 
 		mode = EDITMODE;
-
+		GameObject cBtn = null;
 		foreach(KeyValuePair<CardBase,int > pair in currentDeck.deck){
 			//AddCard (pair.Key,pair.Value);
 			GameObject button = Instantiate(cardInDeck);
-			button.GetComponent<CardInDeck> ().Set (pair.Key.cardName , pair.Value);
+
+
+			button.GetComponent<CardInDeck> ().SetCard (pair.Key, pair.Value);
 			button.transform.SetParent (editDeckPage.transform, false);
+
+
 			//I need to traslate the cards
-
+			if(cBtn != null){
+				button.transform.position = cBtn.transform.position;
+				button.transform.Translate (new Vector3(0,-25,0));
+			}
+		
+			cBtn = button;
+			cardButtons.Add (pair.Key,cBtn);
 		}
-
+		cardCount.GetComponent<Text>().text= currentDeck.Total ()+"/"+cardLimit;
 	}
 	public void SetDeckBnt(GameObject btn){
 		currentDeckBtn = btn;
@@ -213,7 +224,7 @@ public class CollectionMaster : MonoBehaviour {
 		string cid = currentDeck.Name (); 
 		currentDeckBtn.GetComponent<EditDeckBtn> ().SetName (cid);	
 		
-		foreach (KeyValuePair<string,GameObject> button in cardButtons) {
+		foreach (KeyValuePair<CardBase,GameObject> button in cardButtons) {
 			Destroy (button.Value);
 		}
 
@@ -223,24 +234,24 @@ public class CollectionMaster : MonoBehaviour {
 
 
 	}
-	public void AddCard(GameObject gCard){
-		currentDeck.Add (gCard.GetComponent<Card>().cbase,1);
-		Card card = gCard.GetComponent<Card> ();
+	public void AddCard(CardBase gCard){
+		currentDeck.Add (gCard,1);
 
+		CardBase cBase = gCard;
 
-		if (!cardButtons.ContainsKey (card.CardName())) {
+		if (!cardButtons.ContainsKey (cBase)) {
 			GameObject button = Instantiate (cardInDeck);	
 			button.transform.SetParent (editDeckPage.transform , false);
 			Vector3 down = new Vector3(0,currentDeck.Count ()*-25,0);
 			button.transform.Translate (down);
-			button.GetComponent<CardInDeck> ().SetCard (gCard, currentDeck.deck[gCard.GetComponent<Card>().cbase]);
-			cardButtons.Add (card.CardName (), button);
+			button.GetComponent<CardInDeck> ().SetCard (cBase, currentDeck.deck[cBase]);
+			cardButtons.Add (cBase, button);
 		}else{
-			cardButtons [card.CardName ()].GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard.GetComponent<Card>().cbase]);	
+			cardButtons [cBase].GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[cBase]);	
 
 		}
 
-
+		cardCount.GetComponent<Text> ().text = currentDeck.Total () + "/" + cardLimit;
 	}
 
 	public void AddCard(GameObject gCard, int amount){
@@ -248,34 +259,31 @@ public class CollectionMaster : MonoBehaviour {
 		Card card = gCard.GetComponent<Card> ();
 
 
-		if (!cardButtons.ContainsKey (card.CardName())) {
+		if (!cardButtons.ContainsKey (card.CardBase())) {
 			GameObject button = Instantiate (cardInDeck);	
 			Vector3 down = new Vector3(0,currentDeck.Count ()*-25,0);
 			button.transform.Translate (down);
-			button.GetComponent<CardInDeck> ().SetCard (gCard, currentDeck.deck[card.cbase]);
+			button.GetComponent<CardInDeck> ().SetCard (card.CardBase(), currentDeck.deck[card.cbase]);
 			button.transform.SetParent (editDeckPage.transform , false);
-			cardButtons.Add (card.CardName (), button);
+			cardButtons.Add (card.CardBase(), button);
 
 		}
-		cardButtons [card.CardName ()].GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard.GetComponent<Card>().cbase]);	
-
+		cardButtons [card.CardBase()].GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard.GetComponent<Card>().cbase]);	
+		cardCount.GetComponent<Text> ().text = currentDeck.Total () + "/" + cardLimit;
 
 
 	}
 
 
-	public void SubCard(GameObject gCard){
-		GameObject tmp = cardButtons [gCard.GetComponent<Card> ().CardName ()];
-		currentDeck.deck [gCard.GetComponent<Card>().cbase] = currentDeck.deck [gCard.GetComponent<Card>().cbase] - 1;
-		tmp.GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard.GetComponent<Card>().cbase]);	
-		if (currentDeck.deck [gCard.GetComponent<Card>().cbase] <= 0) {
-			
-			cardButtons.Remove (gCard.GetComponent<Card>().CardName());
+	public void SubCard(CardBase gCard){
+		GameObject tmp = cardButtons [gCard];
+		currentDeck.deck [gCard] = currentDeck.deck [gCard] - 1;
+		tmp.GetComponent<CardInDeck> ().SetAmout(currentDeck.deck[gCard]);	
+		if (currentDeck.deck [gCard] <= 0) {
+			cardButtons.Remove (gCard);
 			Destroy (tmp);
 		}
-
-
-
+		cardCount.GetComponent<Text> ().text = currentDeck.Total () + "/" + cardLimit;
 	}
 
 	private int more=10;
