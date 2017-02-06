@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 using System;
+
 // Serializable
 
 [ExecuteInEditMode]
@@ -48,26 +49,9 @@ public class Card: MonoBehaviour {
 		return cbase;
 	}
 
-
-
-}
-[Serializable]
-public class CardBase{
-	public string cardName;
-
-	public string cardType;
-
-	public string cost;
-
-	public string rules;
-
-
-
-	public CardBase(){
-		
+	public void Amount(int amount){
+		cbase.amount = amount;
 	}
-
-
 
 
 }

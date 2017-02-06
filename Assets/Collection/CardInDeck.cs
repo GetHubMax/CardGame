@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-
+//using MyApplication;
 public class CardInDeck : MonoBehaviour {
 	string cardName;
 	CardBase card;

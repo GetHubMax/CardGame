@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-namespace MyApplication
-{
+
+
+
 	[Serializable]
-	public class Deck
+	public class Deck:SyncListStruct<CardBase>
 	{
-		public Dictionary<CardBase,int> deck = new Dictionary<CardBase,int>();
+		//public Dictionary<CardBase,int> deck = new Dictionary<CardBase,int>();
 		[SerializeField]
 		private string name;
 		[SerializeField]
@@ -16,6 +18,8 @@ namespace MyApplication
 		private  int id;
 		[SerializeField]
 		private int total=0;
+
+
 
 
 		public Deck (string name, int id){
@@ -29,40 +33,40 @@ namespace MyApplication
 			this.path = path;
 		}
 
-		public void Add(CardBase card){
-			if (deck.ContainsKey (card)) {
-				deck [card] = deck [card] + 1;
-			} else {
-				deck.Add (card, 1);
+		public void AddCard(CardBase card){
+			for (int i = 0; i < Count; i++) {
+				CardBase c = GetItem (i);
+				if (c == card) {
+					c.amount++;
+					total++;
+					return;
+				}
 			}
+
+			card.amount++;
+			Add (card);
 			total++;
 		}
 
-		public void Add(CardBase card, int more=1){
-			if (deck.ContainsKey (card)) {
-				deck [card] = deck [card] + more;
-			} else {
-				deck.Add (card, more);
-			}
-			total++;
-		}
 
+	
 		public void SubCard(CardBase card){
-			if (deck.ContainsKey (card)) {
-				deck [card] = deck [card] -1;
+			for (int i = 0; i < Count; i++) {
+				CardBase c = GetItem (i);
+				if (c == card) {
+					c.amount--;
+					total--;
+					if (c.amount <= 0) {
+						Remove (c);
+					}
+					return;
+				}
 			}
-			if (deck [card] <= 0) {
-				deck.Remove (card);
-			}
-			total--;
+
 
 		}
 
-
-		public List<CardBase> GetCards(){
-			return new List<CardBase>(deck.Keys);
-
-		}
+			
 
 
 		public int Total(){
@@ -71,16 +75,6 @@ namespace MyApplication
 
 
 
-		public int CardAmout(CardBase card){
-			if (deck.ContainsKey (card)) {
-				return deck [card];
-			
-			} else {
-			
-				return 0;
-			}				
-			
-		}
 
 		public string Name(){
 			return name;
@@ -95,11 +89,8 @@ namespace MyApplication
 			return id;
 		}
 
-		public int Count(){
-			return deck.Count;
-		}
-	
-	
+
+
 		public void Path(string name, string path){
 			this.path = path;
 			this.name = name;
@@ -110,13 +101,70 @@ namespace MyApplication
 		}
 
 
+		public bool CanDraw(){
+			return Count > 0;
+		}
+
+
+		public CardBase Draw(){
+
+			int index = UnityEngine.Random.Range(0,Count);
+			CardBase rt = GetItem (index);
+			rt.amount--;
+			if (rt.amount <= 0) {
+				Remove (rt);
+			}
+			return rt;
+
+
+		}
 
 
 
 	}
 
+	[Serializable]
+	public struct CardBase{
+		public string cardName;
 
-		
+		public string cardType;
+
+		public string cost;
+
+		public string rules;
+
+		public int amount;
+
+		public static bool operator ==(CardBase x, CardBase y) 
+		{
+			return x.cardName.Equals(y.cardName);
+		}
+
+		public static bool operator !=(CardBase x, CardBase y) 
+		{
+			return !x.cardName.Equals(y.cardName);
+		}
+
+
+
+
+		public override int GetHashCode(){
+			return cardName.GetHashCode ();
+
+		}
+
+		public override bool  Equals(System.Object obj){
+			if(obj is CardBase){
+				return true;
+			}
+			CardBase cBase = (CardBase) obj;
+			return cBase.cardName == this.cardName;
+		}
+
+
 
 }
+		
+
+
 
